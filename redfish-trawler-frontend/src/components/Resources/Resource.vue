@@ -37,8 +37,8 @@ export default {
     props: ['service', 'payload', 'keys', 'deleteable'],
     watch: {
         payload() {
-            this.title = 'ResourceGeneric'
             this.resource = this.payload['_payload']
+            this.title = this.resource['@odata.type'].split('.').at(-1)
         },
     },
     setup(props) {
@@ -52,7 +52,3 @@ export default {
     }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>

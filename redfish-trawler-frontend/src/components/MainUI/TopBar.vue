@@ -62,7 +62,7 @@ export default {
 
     const service_info = ref({
         'nickname':  {'option': "Nickname (optional)", 'value':''},
-        'hostname':  {'option': "Hostname", 'value':'-'},
+        'hostname':  {'option': "Hostname", 'value':'http://127.0.0.1:8000'},
         'username':  {'option': "Username", 'value':'-'},
         'password':  {'option': "Password", 'value':''},
         'logintype':  {'option': "LoginType", 'value':['Basic', 'Session', 'None']}
@@ -71,7 +71,7 @@ export default {
 
     const new_service_info = ref({
       'nickname': '',
-      'hostname': '-',
+      'hostname': 'http://127.0.0.1:8000',
       'username': '-',
       'password': '',
       'logintype': 'Basic'

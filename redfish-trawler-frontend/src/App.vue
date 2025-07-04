@@ -21,6 +21,9 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
               <div class="jumbotron hello" :key="reset_me">
                 <PageChassis :service="current_service" v-if="current_page=='pagechassis' && current_service!='unknown'"/>
                 <PageUserManagement :service="current_service" v-else-if="current_page=='pageusermanagement' && current_service!='unknown'"/>
+                <PageSystem :service="current_service" v-else-if="current_page=='pagesystem' && current_service!='unknown'"/>
+                <PageManager :service="current_service" v-else-if="current_page=='pagemanager' && current_service!='unknown'"/>
+                <PageLog :service="current_service" v-else-if="current_page=='pagelog' && current_service!='unknown'"/>
                 <div v-else-if="!current_service || current_service==='unknown'">
                   Add or select a service to Continue
                 </div>
@@ -40,21 +43,26 @@ import StatusToast from './components/MainUI/StatusToast.vue'
 import SideBar from './components/MainUI/SideBar.vue'
 import TopBar from './components/MainUI/TopBar.vue'
 import LocationBar from './components/MainUI/LocationBar.vue'
+
 import PageChassis from './components/Pages/Chassis.vue'
 import PageUserManagement from './components/Pages/UserManagement.vue'
-// import PageTesting from './components/Pages/PageTesting.vue'
+import PageSystem from './components/Pages/System.vue'
+import PageManager from './components/Pages/Manager.vue'
+import PageLog from './components/Pages/Log.vue'
+
 import { ref } from 'vue'
 
 export default {
   name: 'App',
   components: {
-    SideBar,
-    TopBar,
-    LocationBar,
+    StatusToast, SideBar, TopBar, LocationBar,
     PageChassis,
     PageUserManagement,
-    StatusToast
-    // PageTesting
+    PageSystem,
+    PageManager
+  },
+  created () {
+      document.title = "Redfish Trawler";
   },
   setup(){
     // TODO: Don't pass down service all the way down to children, propogate gets to parent (?)
@@ -76,7 +84,6 @@ export default {
 
     function showToast(data) {
       console.log(data)
-
     }
 
     return {changeMain, changeService, current_page, current_service, reset_me}
@@ -85,62 +92,5 @@ export default {
 </script>
 
 <style>
-html, body {
-    height: 100%;
-}
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: left;
-  background-color:antiquewhite;
-  border:1px;
-  border-style: solid;
-  border-color:cornflowerblue;
-  width:100%;
-  height:100%;
-}
-.bar {
-  background-color: white;
-  border: 1px;
-  border-style: solid;
-  border-color: cornflowerblue;
-  padding: 8px;
-}
-.hello {
-    border:1px;
-    border-style: solid;
-    border-color:cornflowerblue;
-    background-color: lightgrey;
-    padding:8px;
-    text-align: center;
-    min-height:500px;
-}
-.basic {
-  justify-content: center;
-  align-items: center;
-}
-.title {
-  justify-content: left;
-  text-align: left;
-}
-.propertyblock {
-  justify-content: left;
-  text-align: left;
-  background-color: white;
-  border: 1px;
-  border-style: solid;
-  border-color: grey;
-  padding: 8px;
-}
-img {
-  width:100%
-}
-td {
-  text-align: center;
-  vertical-align: middle;
-}
-a {
-  color: cornflowerblue;
-}
+  @import './assets/app.css';
 </style>

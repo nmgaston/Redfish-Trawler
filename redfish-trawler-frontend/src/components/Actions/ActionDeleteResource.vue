@@ -10,14 +10,14 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
     <!-- Button trigger modal -->
     <!-- TODO: replace each button with vue class?  Self check information before accepting -->
     <!-- Take advantage of Vues reactive forms -->
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#deleteResourceModal">
-      Reset
+    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteResourceModal">
+      Delete
     </button>
     <div class="modal fade" id="deleteResourceModal" tabindex="-1" aria-labelledby="deleteResourceLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="deleteResourceLabel">Reset Chassis</h5>
+            <h5 class="modal-title" id="deleteResourceLabel">Delete Resource</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -38,7 +38,7 @@ export default {
   name: "ActionDeleteResource",
   props: ['service', 'target_id'],
   data() {
-    return { 'target_value': 'Chassis' }
+    return {}
   },
   watch: { 
     target_id: function(new_value) { 
@@ -64,10 +64,3 @@ export default {
   }
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-#current_service { 
-  max-width:500px;
-}
-</style>

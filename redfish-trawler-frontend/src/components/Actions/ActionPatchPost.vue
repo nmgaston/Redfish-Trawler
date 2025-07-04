@@ -10,14 +10,14 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
     <!-- Button trigger modal -->
     <!-- TODO: replace each button with vue class?  Self check information before accepting -->
     <!-- Take advantage of Vues reactive forms -->
-    <a href="#" data-bs-toggle="modal" data-bs-target="#postAccountModal">
-      Add New
+    <a href="#" data-bs-toggle="modal" :data-bs-target="'#' + my_id + 'Modal'">
+      {{ short }}
     </a>
-    <div class="modal fade" id="postAccountModal" tabindex="-1" aria-labelledby="postAccountLabel" aria-hidden="true">
+    <div class="modal fade" :id="my_id + 'Modal'" tabindex="-1" :aria-labelledby="my_id + 'Label'" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="postAccountLabel">Reset Chassis</h5>
+            <h5 class="modal-title" :id="my_id + 'Label'">{{ msg }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -34,61 +34,48 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-danger" @click="postAccount" data-bs-dismiss="modal">Yes</button>
+            <button type="button" class="btn btn-danger" @click="postWithForm" data-bs-dismiss="modal">OK</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </div>
       </div>
-    </div>
-</template>
+   </div>
+</template> 
 
 <script>
 import { ref } from 'vue';
+let my_id = 0
 export default {
-  name: "ActionPostAccount",
-  props: ['service', 'target_id'],
+  name: "ActionPatchPost",
+  props: ['service', 'title', 'short', 'msg', 'action_uri', 'action_info', 'call_type'],
+  beforeCreate() {
+    this.my_id = "PatchPost" + my_id.toString();
+    my_id += 1;
+  },
   data() {
-    return { 'target_value': 'Chassis' }
+    return {}
   },
   watch: { 
-    target_id: function(new_value) { 
-      this.target_value = new_value
-      print(this.target_value)
-      print(this.target_id)
-      print(this.service)
+    action_info: function(new_value) { 
+      console.log(new_value)
     }
   },
   setup(props) {
 
-    const action_info = ref({ 
-        'Enabled':  {'option': "Enabled", 'value':true},
-        'Locked':  {'option': "Locked", 'value':true},
-        'Description': {'option': 'Description', 'value': 0},
-        'UserName': {'option': 'UserName', 'value': 0},
-        'Password': {'option': 'Password', 'value': 0},
-        'RoleId': {'option': 'RoleId', 'value': 0}
-      }
-    )
+    const action_info = ref({ })
 
     const action_parameters = ref({ })
 
-    function postAccount(event) {
-      console.log('POST NOW')
-      fetch('http://127.0.0.1:5000/redfish/v1/AccountService/Accounts?service_name=' + props.service, {
-        method: 'POST',
+    function postWithForm(event) {
+      console.log(props.call_type + 'NOW')
+      fetch('http://127.0.0.1:5000/' + props.action_uri + '?service_name=' + props.service, {
+        method: props.call_type,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(action_parameters.value),
       }).then(response => alert([response.status, response.statusText, '\n'].join(' ')));
     }
 
-    return { action_info, action_parameters, postAccount}
+    return { action_parameters, postWithForm}
   }
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-#current_service { 
-  max-width:500px;
-}
-</style>
