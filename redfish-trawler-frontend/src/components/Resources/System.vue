@@ -19,7 +19,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         </div>
                         <div> Health: {{ resource.Status ? resource.Status.Health : 'n/a' }}</div>     
                         <div> PowerState: {{ resource['PowerState'] }}</div>     
-                        <div> BootOverride: {{ resource['Boot']['BootSourceOverrideEnabled'] }}</div>     
+                        <div> BootOverride: {{ resource.Boot ? resource['Boot']['BootSourceOverrideEnabled'] : 'n/a'}}</div>     
                     </div>
                     <div class="title">Processors</div>
                     <table class="table">
@@ -68,23 +68,23 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                             </tr>
                         </tbody>
                     </table>
-                    <div class="title">Actions</div>
-                    <div class="propertyblock">
+                    <div class="propertyblock" style="float: right">
+                        <div class="title">Actions</div>
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/System/' + resource.Id + '/System.Reset'" 
+                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/System.Reset'" 
                             title="Reset System" short="Reset System"
                             msg="Are you sure you wish to reset this System?"/>
                         </div>
                         <div>
-                            <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/System/' + resource.Id + '/System.Reset'" 
+                            <ActionPatchPost :service="service" 
+                            :action_uri="'/redfish/v1/Systems/' + resource.Id " :action_info="action_params['one_time_boot']" :call_type="'PATCH'"
                             title="One Time Boot Override" short="One Time Boot Override"
                             msg="Are you sure you wish to reset this System?"/>
                         </div>
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/System/' + resource.Id + '/System.Reset'" 
+                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/System.Reset'" 
                             title="Modify BIOS" short="Modify BIOS"
                             msg="Are you sure you wish to reset this System?"/>
                         </div>
@@ -98,9 +98,10 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 <script>
 import { ref } from 'vue';
 import ActionModal from '../Actions/ActionModal.vue';
+import ActionPatchPost from '../Actions/ActionPatchPost.vue';
 export default {
     name: 'ResourceSystem',
-    components: { ActionModal },
+    components: { ActionModal, ActionPatchPost },
     props: ['service', 'payload', 'keys'],
     watch: {
         payload() {
@@ -109,11 +110,24 @@ export default {
             this.processors = this.payload['_processors']
             this.memory = this.payload['_memory']
             this.storage = this.payload['_storage']
+            if (this.resource.Boot['BootSourceOverrideTarget@Redfish.AllowableValues']) {
+                this.action_params['one_time_boot']['Boot.BootSourceOverrideTarget']['value'] = this.resource.Boot['BootSourceOverrideTarget@Redfish.AllowableValues']
+            }
         },
     },
     setup(props) {
         console.log(props.payload)
         console.log(props.keys)
+
+        const action_params = ref({
+            "one_time_boot": { 
+              'Boot.BootSourceOverrideEnabled':  {'option': "Boot.BootSourceOverrideEnabled", 'value': ['Disabled', 'Once', 'Continuous']},
+              'Boot.BootSourceOverrideMode':  {'option': "Boot.BootSourceOverrideMode", 'value':['Legacy', 'Uefi']},
+              'Boot.BootSourceOverrideTarget': {'option': 'Boot.BootSourceOverrideTarget', 'value': 
+        ["None", "Pxe", "Floppy", "Cd", "Usb", "Hdd", "BiosSetup", "Utilities", "Diags", "UefiShell", "UefiTarget", "SDCard", "UefiHttp", "RemoteDrive", "UefiBootNext", "Recovery"]
+            },
+          }}
+        )
 
         const title = ref('System')
         const resource = ref(props.payload['_payload'])
@@ -121,7 +135,7 @@ export default {
         const memory = ref(props.payload['_memory'])
         const storage = ref(props.payload['_storage'])
 
-        return {title, resource, processors, memory, storage}
+        return {title, resource, processors, memory, storage, action_params}
     }
 }
 </script>

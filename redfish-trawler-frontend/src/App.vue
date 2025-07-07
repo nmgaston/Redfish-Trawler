@@ -59,7 +59,8 @@ export default {
     PageChassis,
     PageUserManagement,
     PageSystem,
-    PageManager
+    PageManager,
+    PageLog
   },
   created () {
       document.title = "Redfish Trawler";

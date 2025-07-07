@@ -1,0 +1,54 @@
+<!--
+SPDX-FileCopyrightText: 2023-2024 DMTF
+SPDX-License-Identifier: BSD-3-Clause
+Copyright Notice:
+Copyright 2023-2024 DMTF. All rights reserved.
+License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/Redfish-Trawler/blob/main/LICENSE.md
+-->
+
+<template>
+<!-- Use Vue template for a basic Table, on all collections -->
+    <div class="basic">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="title">{{ title }}
+                        <ActionDeleteResource v-if="deleteable" :target_id="resource['@odata.id']" :service="service"/>
+                    </div>
+                    <div class="propertyblock">
+                        <div v-for="(entry, key) in resource" :key="entry">
+                            {{ key }}: {{ entry }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { ref } from 'vue';
+import ActionDeleteResource from '../Actions/ActionDeleteResource.vue';
+export default {
+    name: 'ResourceLogEntry',
+    components: { 
+        ActionDeleteResource
+    },
+    props: ['service', 'payload', 'keys', 'deleteable'],
+    watch: {
+        payload() {
+            this.resource = this.payload['_payload']
+            this.title = this.resource['@odata.type'].split('.').at(-1)
+        },
+    },
+    setup(props) {
+        console.log(props.payload)
+        console.log(props.keys)
+
+        const title = ref('Resource')
+        const resource = ref(props.payload['_payload'])
+
+        return {title, resource}
+    }
+}
+</script>

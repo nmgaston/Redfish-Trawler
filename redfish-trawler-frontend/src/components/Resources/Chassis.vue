@@ -32,7 +32,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         <tbody>
                             <tr v-for="entry in temps" :key="entry">
                                 <td> {{ entry['MemberId'] }} ({{ entry['Name'] }})</td>
-                                <td> {{ entry['ReadingCelsius'] }} C* </td>
+                                <td> {{ entry.ReadingCelsius ? entry['ReadingCelsius'] + 'C*' : ''}} </td>
                             </tr>
                         </tbody>
                     </table>
@@ -53,11 +53,11 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                             </tr>
                         </tbody>
                     </table>
-                    <div class="title">Actions</div>
-                    <div class="propertyblock">
+                    <div class="propertyblock" style="float: right">
+                        <div class="title">Actions</div>
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/Chassis/' + resource.Id + '/Chassis.Reset'" 
+                            :action_uri= "'/redfish/v1/Chassis/' + resource.Id + '/Actions/Chassis.Reset'" 
                             title="Reset Chassis" short="Reset Chassis"
                             msg="Are you sure you wish to reset this Chassis?"/>
                         </div>
