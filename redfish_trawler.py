@@ -239,8 +239,94 @@ def gather_page_info():
 
     print(context)
 
+    return_data = {}
+
     # TODO: Work on polling individual resources, using Redfish's baked in polling registering function (and other message registry stuff)?
-    if page_name.lower() == 'chassis':
+    if page_name.lower() == 'manager':
+        # if single system...
+        manager_name = request.args.get('manager_name')
+        if manager_name:
+            return_data = {}
+
+            response = context.get('/redfish/v1/Managers/{}'.format(manager_name))
+
+            if response.status in [200]:
+                decoded = response.dict
+                return_data['_payload'] = decoded
+
+                if 'NetworkProtocol' in decoded:
+                    response = context.get(decoded['NetworkProtocol']['@odata.id'])
+                    if response.status in [200]:
+                        return_data['_protocol'] = response.dict
+
+                if 'EthernetInterfaces' in decoded:
+                    response = context.get(decoded['EthernetInterfaces']['@odata.id'])
+                    if response.status in [200]:
+                        return_data['_interfaces'] = []
+                        return_data['_interfaces'].extend(get_all_members(context, response.dict['Members']))
+                
+                return return_data
+
+            else:
+                return 'NO MANAGER FOUND', 400
+        else:
+            # Return Format: _members: exposed system data, _payload: full response dict
+            response = context.get('/redfish/v1/Managers')
+
+            if response.status in [200]:
+                decoded = response.dict
+                return_data['_payload'] = decoded
+                return_data['_members'] = get_all_members(context, decoded['Members'])
+            else:
+                return 'NO SYSTEM FOUND', 400
+
+        return return_data
+
+    if page_name.lower() == 'system':
+        # if single system...
+        system_name = request.args.get('system_name')
+        if system_name:
+            return_data = {'_payload': {}, '_memory': [], '_processors': [], '_storage': []}
+
+            response = context.get('/redfish/v1/Systems/{}'.format(system_name))
+
+            if response.status in [200]:
+                decoded = response.dict
+                return_data['_payload'] = decoded
+                response_links = decoded.get('Links', {})
+
+                # procs
+                if 'Processors' in decoded:
+                    response = context.get(decoded['Processors']['@odata.id'])
+                    if response.status in [200]:
+                        return_data['_processors'].extend(get_all_members(context, response.dict['Members']))
+
+                if 'Memory' in decoded:
+                    response = context.get(decoded['Memory']['@odata.id'])
+                    if response.status in [200]:
+                        return_data['_memory'].extend(get_all_members(context, response.dict['Members']))
+
+                if 'SimpleStorage' in decoded:
+                    response = context.get(decoded['SimpleStorage']['@odata.id'])
+                    if response.status in [200]:
+                        return_data['_storage'].extend(get_all_members(context, response.dict['Members']))
+
+            else:
+                return 'NO SYSTEM FOUND', 400
+        else:
+            # Return Format: _members: exposed system data, _payload: full response dict
+            response = context.get('/redfish/v1/Systems')
+
+            if response.status in [200]:
+                decoded = response.dict
+                return_data['_payload'] = decoded
+                return_data['_members'] = get_all_members(context, decoded['Members'])
+            else:
+                return 'NO SYSTEM FOUND', 400
+
+        return return_data
+
+    elif page_name.lower() == 'chassis':
         # if single chassis...
         chassis_name = request.args.get('chassis_name')
         if chassis_name:
@@ -272,15 +358,13 @@ def gather_page_info():
             else:
                 return 'NO CHASSIS FOUND', 400
         else:
-            # Return Format: _chassis: exposed chassis data, response: full response dict
-            return_data = {'_chassis': [], '_payload': {}}
-
+            # Return Format: _members: exposed chassis data, _payload: full response dict
             response = context.get('/redfish/v1/Chassis')
 
             if response.status in [200]:
                 decoded = response.dict
                 return_data['_payload'] = decoded
-                return_data['_chassis'] = get_all_members(context, decoded['Members'])
+                return_data['_members'] = get_all_members(context, decoded['Members'])
             else:
                 return 'NO CHASSIS FOUND', 400
 
@@ -308,6 +392,46 @@ def gather_page_info():
             return 'NO ACCOUNTSERVICE FOUND', 400
 
         return return_data
+
+    if page_name.lower() == 'log':
+        return_data = {}
+        log_name = request.args.get('target')
+        if log_name:
+            # TODO: Make sure input is Sanitized
+            _, _, path, _, _, _ = parse.urlparse(log_name)
+            response = context.get(path)
+
+            if response.status in [200]:
+                decoded = response.dict
+                return_data['_payload'] = decoded
+                log_entry_collection = context.get(decoded['Entries'].get('@odata.id')) if decoded.get('Entries') else None
+                return_data['_entries'] = log_entry_collection.dict['Members'] if log_entry_collection else []
+                return return_data
+
+            else:
+                return 'NO LOG FOUND', 400
+        else:
+            all_member_collections = []
+            all_logservices = []
+
+            # Get all members with a possible log service in them
+            for target in ['/redfish/v1/Managers', '/redfish/v1/Systems', '/redfish/v1/Chassis']:
+                response = context.get(target)
+                if response.status in [200]:
+                    decoded = response.dict
+                    all_member_collections.append(decoded)
+            
+            for item in all_member_collections:
+                my_members = get_all_members(context, item['Members'])
+                for member in my_members:
+                    response_log_members = context.get(member['LogServices'].get('@odata.id')) if member.get('LogServices') else None
+                    if response_log_members:
+                        my_log_members = get_all_members(context, response_log_members.dict['Members'])
+                        all_logservices.extend(my_log_members)
+            
+            return_data['_members'] = all_logservices
+
+            return return_data
 
     return 'OK PAGE VIEW'
 
@@ -344,7 +468,7 @@ if __name__ == '__main__':
 
     # config
     argget.add_argument('--hostip', type=str, default='0.0.0.0',
-                        help='ip to host on, default 0.0.0.0')
+                        help='ip to host on, default 0.0.0.0.  do not bind to public facing ip')
     args = argget.parse_args()
 
     # Setup ENDPOINTS

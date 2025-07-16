@@ -7,24 +7,21 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 -->
 
 <template>
-  <!-- Use Vue template for a basic Table, on all collections -->
   <div class="basic">
-
-      <!-- Use Vue template for a basic Table, on all collections -->
-    <TableChassis :service="service" :payload="page_payload['_members']" v-if="view==='table'" @goto="elem => gotoResource(elem)"/>
-    <ResourceChassis :service="service" :payload="page_payload" v-if="view==='resource'"/> 
+    <TableLog :service="service" :payload="page_payload['_members']" v-if="view==='table'" @goto="elem => gotoResource(elem)"/>
+    <ResourceLog :service="service" :payload="page_payload" v-if="view==='resource'"/> 
   </div>
 </template>
 
 <script>
 import { ref } from 'vue';
-import TableChassis from '../Tables/Chassis.vue';
-import ResourceChassis from '../Resources/Chassis.vue';
+import TableLog from '../Tables/Log.vue';
+import ResourceLog from '../Resources/Log.vue';
 export default {
-    name: 'PageChassis',
+    name: 'PageLog',
     components: {
-        TableChassis,
-        ResourceChassis
+        TableLog,
+        ResourceLog
     },
     props: ['service'],
     watch: { },
@@ -35,7 +32,7 @@ export default {
 
         function gotoTable() {
           // TODO: move to its own shared function
-          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=chassis', {
+          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=log', {
               method: 'GET',
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())
@@ -47,7 +44,7 @@ export default {
           console.log('GOTO!!!')
           console.log(elem)
           // TODO: move to its own shared function
-          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=chassis&chassis_name=' + elem, {
+          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=log&target=' + elem, {
               method: 'GET',
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())

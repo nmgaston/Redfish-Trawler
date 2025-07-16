@@ -30,7 +30,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 import { ref } from 'vue';
 import ActionDeleteResource from '../Actions/ActionDeleteResource.vue';
 export default {
-    name: 'ResourceGeneric',
+    name: 'ResourceLogEntry',
     components: { 
         ActionDeleteResource
     },

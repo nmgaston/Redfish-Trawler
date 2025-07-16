@@ -14,7 +14,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
             <thead>
                 <tr>
                     <th scope="col-4">Name</th>
-                    <th scope="col-4">ChassisType</th>
+                    <th scope="col-4">SystemType</th>
                     <th scope="col-2">PowerState</th>
                     <th scope="col-2">Health</th>
                     <th scope="col-2">Action</th>
@@ -23,13 +23,13 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
             <tbody>
                 <tr v-for="entry in all_elements" :key="entry">
                     <td> <a href="#" @click="$emit('goto', entry.Id)">{{ entry.Name }} ({{ entry.Id }})</a> </td>
-                    <td> {{ entry.ChassisType }}</td>
+                    <td> {{ entry.SystemType }}</td>
                     <td> {{ entry.PowerState }}</td>
                     <td> {{ entry.Status ? entry.Status.Health : 'n/a' }}</td>     
                     <td> <ActionModal :service="service" 
-                        :action_uri= "'/redfish/v1/Chassis/' + entry.Id + '/Actions/Chassis.Reset'" 
-                        title="Reset Chassis" short="Reset"
-                        msg="Are you sure you wish to reset this Chassis?"/>
+                        :action_uri= "'/redfish/v1/Systems/' + entry.Id + '/System.Reset'" 
+                        title="Reset System" short="Reset"
+                        msg="Are you sure you wish to reset this System?"/>
                     </td>
                 </tr>
             </tbody>
@@ -41,7 +41,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 import { ref } from 'vue';
 import ActionModal from '../Actions/ActionModal.vue';
 export default {
-    name: 'TableChassis',
+    name: 'TableSystem',
     props: ['service', 'payload', 'keys'],
     components: {
         ActionModal
@@ -61,7 +61,3 @@ export default {
     }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>

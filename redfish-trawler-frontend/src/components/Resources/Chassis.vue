@@ -32,7 +32,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         <tbody>
                             <tr v-for="entry in temps" :key="entry">
                                 <td> {{ entry['MemberId'] }} ({{ entry['Name'] }})</td>
-                                <td> {{ entry['ReadingCelsius'] }} C* </td>
+                                <td> {{ entry.ReadingCelsius ? entry['ReadingCelsius'] + 'C*' : ''}} </td>
                             </tr>
                         </tbody>
                     </table>
@@ -53,6 +53,15 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                             </tr>
                         </tbody>
                     </table>
+                    <div class="propertyblock" style="float: right">
+                        <div class="title">Actions</div>
+                        <div>
+                            <ActionModal :service="service" 
+                            :action_uri= "'/redfish/v1/Chassis/' + resource.Id + '/Actions/Chassis.Reset'" 
+                            title="Reset Chassis" short="Reset Chassis"
+                            msg="Are you sure you wish to reset this Chassis?"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,10 +70,11 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 
 <script>
 import { ref } from 'vue';
+import ActionModal from '../Actions/ActionModal.vue';
 export default {
     name: 'ResourceChassis',
-    components: { },
-    props: ['payload', 'keys'],
+    components: { ActionModal },
+    props: ['service', 'payload', 'keys'],
     watch: {
         payload() {
             this.title = 'Chassis'
@@ -91,7 +101,3 @@ export default {
     }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>

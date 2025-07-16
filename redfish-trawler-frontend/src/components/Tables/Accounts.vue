@@ -26,7 +26,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                 <td> {{ entry.RoleId }}</td>
                 <td> {{ entry.Locked }}</td>
                 <td> {{ entry.Enabled }}</td>
-                <td> {{ entry.AccountTypes.join(', ') }}</td>
+                <td> {{ entry.AccountTypes ? entry.AccountTypes.join(', ') : '-'}}</td>
             </tr>
         </tbody>
     </table>
@@ -55,7 +55,3 @@ export default {
     }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>
