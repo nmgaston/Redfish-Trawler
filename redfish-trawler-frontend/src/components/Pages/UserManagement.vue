@@ -75,7 +75,7 @@ export default {
 
         function gotoTable() {
           // TODO: move to its own shared function
-          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=usermanagement', {
+          fetch('/page-view?service_name=' + props.service + '&page_name=usermanagement', {
               method: 'GET',
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())
@@ -84,7 +84,7 @@ export default {
         }
 
         function gotoResource(elem) {
-          fetch('http://127.0.0.1:5000' + elem + "?service_name=" + props.service, {
+          fetch('' + elem + "?service_name=" + props.service, {
               method: 'GET',
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())

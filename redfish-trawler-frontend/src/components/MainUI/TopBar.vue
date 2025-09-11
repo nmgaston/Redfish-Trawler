@@ -78,7 +78,7 @@ export default {
     })
 
     function pollServices(event) {
-      fetch('http://127.0.0.1:5000/services')
+      fetch('/services')
         .then(response => response.json())
         .then(data => services.value = data.available);
     }
@@ -86,7 +86,7 @@ export default {
     function addService(event) {
       // do not use getelement, use Vue standards
       console.log(new_service_info)
-      fetch('http://127.0.0.1:5000/add-service', {
+      fetch('/add-service', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(new_service_info.value)
@@ -97,7 +97,7 @@ export default {
     function delService(event) {
       console.log(current_service.value)
       console.log(JSON.stringify({ hostname: current_service.value }))
-      fetch('http://127.0.0.1:5000/delete-service', {
+      fetch('/delete-service', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,7 +108,7 @@ export default {
     }
 
     function closeService(event) {
-      fetch('http://127.0.0.1:5000/close-service', {
+      fetch('/close-service', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

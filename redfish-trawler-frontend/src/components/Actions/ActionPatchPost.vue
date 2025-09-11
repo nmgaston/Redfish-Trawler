@@ -85,7 +85,7 @@ export default {
           output_json[path[0]] = action_parameters.value[item]
         }
       }
-      fetch('http://127.0.0.1:5000' + props.action_uri + '?service_name=' + props.service, {
+      fetch('' + props.action_uri + '?service_name=' + props.service, {
         method: props.call_type,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(output_json),

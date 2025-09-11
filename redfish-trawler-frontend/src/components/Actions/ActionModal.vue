@@ -73,7 +73,7 @@ export default {
 
     function runAction(event) {
       console.log('RUNNING ACTION NOW')
-      fetch('http://127.0.0.1:5000' + props.action_uri + '?service_name=' + props.service, {
+      fetch('' + props.action_uri + '?service_name=' + props.service, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(action_parameters.value)
