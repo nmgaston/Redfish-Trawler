@@ -53,7 +53,7 @@ export default {
 
     function deleteResource(event) {
       console.log('DELETE NOW')
-      fetch('http://127.0.0.1:5000/redfish/v1/' + props.target_id + '?service_name=' + props.service, {
+      fetch('/redfish/v1/' + props.target_id + '?service_name=' + props.service, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})

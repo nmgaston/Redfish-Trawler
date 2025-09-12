@@ -32,7 +32,7 @@ export default {
 
         function gotoTable() {
           // TODO: move to its own shared function
-          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=system', {
+          fetch('/page-view?service_name=' + props.service + '&page_name=system', {
               method: 'GET',
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())
@@ -44,7 +44,7 @@ export default {
           console.log('GOTO!!!')
           console.log(elem)
           // TODO: move to its own shared function
-          fetch('http://127.0.0.1:5000/page-view?service_name=' + props.service + '&page_name=system&system_name=' + elem, {
+          fetch('/page-view?service_name=' + props.service + '&page_name=system&system_name=' + elem, {
               method: 'GET',
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())

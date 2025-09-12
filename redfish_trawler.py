@@ -4,13 +4,31 @@
 # Copyright 2023-2024 DMTF. All rights reserved.
 # License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/Redfish-Trawler/blob/main/LICENSE.md
 
+import sys
+import os
+import logging
 import argparse
-import redfish
+import webbrowser
 from urllib import parse
 
-from flask import Flask, render_template, request
+import redfish
+
+from flask import Flask, render_template, request, session
+from flask_session import Session
 
 app = Flask(__name__)
+
+
+app.config["SECRET_KEY"] = os.urandom(12).hex()
+app.config["SESSION_PERMANENT"] = True 
+app.config["SESSION_TYPE"] = "filesystem"
+
+my_logger = logging.getLogger('rsv')
+my_logger.setLevel(logging.DEBUG)
+
+standard_out = logging.StreamHandler(sys.stdout)
+standard_out.setLevel(logging.INFO)
+my_logger.addHandler(standard_out)
 
 SERVICE_PARAMS = ["base_url", "username", "password"]
 
@@ -20,21 +38,33 @@ LOGIN_TYPES = {
     'Session': redfish.AuthMethod.SESSION
 }
 
-# TODO: Reduce code reuse in backend, such as in GET PATCH POST DELETE
-# TODO: Reduce code reuse in action forms in Frontend
-# TODO: Solve modals being shared between actions
-# TODO: Do not store credentials locally, let the browser do it, if at all.
-available_services = {}
+# Storing services per browser session, don't serve services when session unavailable?
 
+active_session = {}
 
-live_services = {}
+@app.route("/")
+def start():
+    if session.get('client_id') is None:
+        print('New Client ID')
+        session['client_id'] = os.urandom(12).hex()
+        my_client_id = session['client_id']
+        active_session[my_client_id] = {
+            "available_services": {},
+            "live_services": {}
+        }
+    return render_template(
+        'compiled/index.html'
+    )
 
 
 @app.route('/services', methods=['GET'])
 def get_service_details():
     """Gives us list of services that are available and live
     """
-
+    my_client_id = session['client_id']
+    available_services = active_session[my_client_id]['available_services']
+    live_services = active_session[my_client_id]['live_services']
+    print(available_services)
     return {
         'available': {nick: host['base_url'] for nick, host in available_services.items()},
         'live': list(live_services.keys())
@@ -45,6 +75,9 @@ def get_service_details():
 def receive_service_details():
     """POST to /add-service, add service details to program
     """
+    my_client_id = session['client_id']
+    available_services = active_session[my_client_id]['available_services']
+    live_services = active_session[my_client_id]['live_services']
 
     nick = request.json.get('nickname')
     if nick is None or len(nick.strip()) == 0:
@@ -68,6 +101,9 @@ def receive_service_details():
 def remove_service_details():
     """POST to /remove-service, removes service_name from active program
     """
+    my_client_id = session['client_id']
+    available_services = active_session[my_client_id]['available_services']
+    live_services = active_session[my_client_id]['live_services']
 
     service_name = request.json.get('hostname')
 
@@ -89,6 +125,10 @@ def remove_service_details():
 
 @app.route('/close-service', methods=['POST'])
 def close_service():
+    my_client_id = session['client_id']
+    available_services = active_session[my_client_id]['available_services']
+    live_services = active_session[my_client_id]['live_services']
+
     service_name = request.json.get('service_name')
 
     if service_name in live_services:
@@ -99,22 +139,6 @@ def close_service():
         return get_service_details()
 
     return get_service_details()
-
-
-@app.route("/")
-def start():
-    return render_template(
-        'compiled/index.html'
-    )
-
-
-@app.route("/test_page")
-def test_page():
-    return render_template(
-        'test_page.html',
-        available=available_services.keys(),
-        live=live_services.keys()
-    )
 
 
 @app.route("/redfish/v1", defaults={'path': ''}, methods=["GET", "POST", "PATCH", "DELETE"])
@@ -442,6 +466,10 @@ def get_service_context(service_name):
     Raises:
         KeyError: service_name doesn't exist
     """
+    my_client_id = session['client_id']
+    available_services = active_session[my_client_id]['available_services']
+    live_services = active_session[my_client_id]['live_services']
+
     if live_services.get(service_name) is None:
 
         if available_services.get(service_name) is None:
@@ -467,9 +495,17 @@ if __name__ == '__main__':
     argget = argparse.ArgumentParser(description='Redfish Trawler')
 
     # config
-    argget.add_argument('--hostip', type=str, default='0.0.0.0',
-                        help='ip to host on, default 0.0.0.0.  do not bind to public facing ip')
+    argget.add_argument('--port', type=int, default='5000', help='port number to host on')
+    argget.add_argument('--nossl', action="store_true", help='disable ssl')
     args = argget.parse_args()
 
-    # Setup ENDPOINTS
-    # hello.py
+    my_hostname = "127.0.0.1:{:n}".format(args.port)
+
+    my_logger.info("Hosting on port {:n}".format(args.port))
+
+    if args.nossl: 
+        webbrowser.open_new("http://" + my_hostname)
+        app.run(port=args.port)
+    else:
+        webbrowser.open_new("https://" + my_hostname)
+        app.run(port=args.port, ssl_context='adhoc')

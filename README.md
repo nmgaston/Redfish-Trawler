@@ -12,6 +12,8 @@ Redfish Trawler requires Python3 and npm on the user's system.
 Additionally, the following Python packages are required:
 
 * flask: https://pypi.org/project/Flask
+* flask-session: https://pypi.org/project/Flask-Session
+* pyopenssl: https://pypi.org/project/pyopenssl
 * redfish: https://pypi.org/project/redfish
 
 You may install the external modules by running:
@@ -22,21 +24,37 @@ You may install the external modules by running:
 
 [npm](https://www.npmjs.com/) is required if making changes to Vue files or anything else in the `redfish-trawler-frontend` directory.
 
+Building may be done with the following commands
+
+For Windows systems:
+
 ```
-cd redfish-trawler-frontend
-npm install
-npm run build
+./build.bat
+```
+
+For Linux systems:
+
+```
+./build.sh
 ```
 
 ## Running
 
-`flask --app redfish_trawler.py run`
+For Windows systems:
 
-Open a browser and go to http://127.0.0.1:5000.
+```
+./run.bat
+```
+
+For Linux systems:
+
+```
+./run.sh
+```
 
 ## Steps to commit
 
 ```
-git add static
+git add static/**
 git add <other files>
 ```
