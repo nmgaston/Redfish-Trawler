@@ -19,23 +19,11 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         </div>
                         <div> Health: {{ resource.Status ? resource.Status.Health : 'n/a' }}</div>     
                         <div> PowerState: {{ resource['PowerState'] }}</div>     
-                        <div> BootOverride: {{ resource.Boot ? resource['Boot']['BootSourceOverrideEnabled'] : 'n/a'}}</div>     
-                    </div>
-                    <div class="title">Processors</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col-4">Name</th>
-                                <th scope="col-4">Max Speed</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="entry in processors" :key="entry">
-                                <td> {{ entry['Id'] }} ({{ entry['Name'] }})</td>
-                                <td> {{ entry.MaxSpeedMHz ? entry['MaxSpeedMHz'] + 'MHz' : '-' }}  </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <div> BootOverride: {{ resource.Boot ? resource['Boot']['BootSourceOverrideEnabled'] : 'n/a'}}</div>
+                        <div> Manufacturer: {{ resource['Manufacturer'] }}</div>   
+                        <div> ProcessorModel: {{ resource.ProcessorSummary ? resource['ProcessorSummary']['Model'] : 'n/a'}}</div>
+                        <div> BIOSVersion: {{ resource['BiosVersion'] }}</div>                      
+                    </div>                    
                 </div>
                 <div class="col">
                     <div class="title">Memory</div>
