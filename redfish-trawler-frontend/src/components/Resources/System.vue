@@ -72,9 +72,9 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         <div class="title">Actions</div>
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/System.Reset'" 
-                            title="Reset System" short="Reset System"
-                            msg="Are you sure you wish to reset this System?"/>
+                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/ComputerSystem.Reset'" 
+                            :action_info="action_params['reset']"
+                            title="Reset System" short="Reset System"/>
                         </div>
                         <div>
                             <ActionPatchPost :service="service" 
@@ -84,7 +84,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         </div>
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/System.Reset'" 
+                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/ComputerSystem.Reset'" 
                             title="Modify BIOS" short="Modify BIOS"
                             msg="Are you sure you wish to reset this System?"/>
                         </div>
@@ -113,6 +113,10 @@ export default {
             if (this.resource.Boot['BootSourceOverrideTarget@Redfish.AllowableValues']) {
                 this.action_params['one_time_boot']['Boot.BootSourceOverrideTarget']['value'] = this.resource.Boot['BootSourceOverrideTarget@Redfish.AllowableValues']
             }
+            const resetAllowable = this.resource?.Actions?.['#ComputerSystem.Reset']?.['ResetType@Redfish.AllowableValues']
+            if (resetAllowable) {
+                this.action_params['reset']['ResetType']['value'] = resetAllowable
+            }
         },
     },
     setup(props) {
@@ -120,6 +124,9 @@ export default {
         console.log(props.keys)
 
         const action_params = ref({
+            "reset": {
+              'ResetType': {'option': 'ResetType', 'value': ['On', 'ForceOff', 'ForceRestart']},
+            },
             "one_time_boot": { 
               'Boot.BootSourceOverrideEnabled':  {'option': "Boot.BootSourceOverrideEnabled", 'value': ['Disabled', 'Once', 'Continuous']},
               'Boot.BootSourceOverrideMode':  {'option': "Boot.BootSourceOverrideMode", 'value':['Legacy', 'Uefi']},

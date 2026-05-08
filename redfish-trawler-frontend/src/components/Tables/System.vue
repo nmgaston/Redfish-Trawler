@@ -27,9 +27,9 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                     <td> {{ entry.PowerState }}</td>
                     <td> {{ entry.Status ? entry.Status.Health : 'n/a' }}</td>     
                     <td> <ActionModal :service="service" 
-                        :action_uri= "'/redfish/v1/Systems/' + entry.Id + '/System.Reset'" 
-                        title="Reset System" short="Reset"
-                        msg="Are you sure you wish to reset this System?"/>
+                        :action_uri= "'/redfish/v1/Systems/' + entry.Id + '/Actions/ComputerSystem.Reset'" 
+                        :action_info="reset_params"
+                        title="Reset System" short="Reset"/>
                     </td>
                 </tr>
             </tbody>
@@ -56,8 +56,11 @@ export default {
         const title = ref('Collection')
         const all_elements = ref(props.payload)
         const all_keys = ref(props.keys)
+        const reset_params = ref({
+            'ResetType': {'option': 'ResetType', 'value': ['On', 'ForceOff', 'ForceRestart']},
+        })
 
-        return {title, all_elements, all_keys}
+        return {title, all_elements, all_keys, reset_params}
     }
 }
 </script>
