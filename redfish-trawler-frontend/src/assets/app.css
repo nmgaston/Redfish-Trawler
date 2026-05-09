@@ -34,8 +34,9 @@ html, body {
   align-items: center;
 }
 .title {
-  justify-content: left;
-  text-align: left;
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
 }
 .propertyblock {
   justify-content: left;
@@ -45,6 +46,22 @@ html, body {
   border-style: solid;
   border-color: grey;
   padding: 8px;
+}
+.kv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.kv-key {
+  text-align: right;
+  font-weight: bold;
+  white-space: nowrap;
+  padding-right: 8px;
+  width: 1%;
+  vertical-align: top;
+}
+.kv-val {
+  text-align: left;
+  vertical-align: top;
 }
 img {
   width:100%
