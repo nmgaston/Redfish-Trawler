@@ -227,11 +227,15 @@ def get_all_members(context, all_members):
         # TODO: Maybe use expected behavior from full path
         scheme, netloc, path, params, query, fragment = parse.urlparse(url)
         if path not in url_payloads:
-            response = context.get(path)
-            url_payloads[path] = response
+            try:
+                response = context.get(path)
+                url_payloads[path] = response
+            except Exception as e:
+                my_logger.warning('Failed to fetch member {}: {}'.format(path, e))
+                url_payloads[path] = None
         response = url_payloads[path]
 
-        if response.status in [200]:
+        if response is not None and response.status in [200]:
             target = response.dict
             if fragment:
                 target_path = fragment.split('/')[1:] # /path/to/rsc
