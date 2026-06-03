@@ -222,15 +222,20 @@ def route_to_service(path):
 def get_all_members(context, all_members):
     data = []
     url_payloads = {}
-    for url in [member['@odata.id'] for member in all_members]:
+    for member in all_members:
+        url = member['@odata.id']
         # TODO: Maybe use expected behavior from full path
         scheme, netloc, path, params, query, fragment = parse.urlparse(url)
         if path not in url_payloads:
-            response = context.get(path)
-            url_payloads[path] = response
+            try:
+                response = context.get(path)
+                url_payloads[path] = response
+            except Exception as e:
+                my_logger.warning('Failed to fetch member {}: {}'.format(path, e))
+                url_payloads[path] = None
         response = url_payloads[path]
 
-        if response.status in [200]:
+        if response is not None and response.status in [200]:
             target = response.dict
             if fragment:
                 target_path = fragment.split('/')[1:] # /path/to/rsc
@@ -238,6 +243,13 @@ def get_all_members(context, all_members):
                     target = target[int(sub_path)] if sub_path.isdigit() else target[sub_path]
 
             data.append(target)
+        else:
+            # Resource is unreachable (e.g. system is powered off/shutdown);
+            # still include it with whatever info we have from the collection entry
+            fallback = dict(member)
+            fallback.setdefault('Id', path.rstrip('/').split('/')[-1])
+            fallback.setdefault('Name', fallback['Id'])
+            data.append(fallback)
     print(data)
     return data
 

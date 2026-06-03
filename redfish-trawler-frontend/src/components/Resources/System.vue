@@ -9,74 +9,73 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 <template>
 <!-- Use Vue template for a basic Table, on all collections -->
     <div class="basic">
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <div class="title">{{ title }}</div>
-                    <div class="propertyblock">
-                        <div v-for="entry in ['Name', 'Id', 'SerialNumber', 'SKU', 'Model']" :key="entry">
-                            {{ entry }}: {{ resource[entry] }}
-                        </div>
-                        <div> Health: {{ resource.Status ? resource.Status.Health : 'n/a' }}</div>     
-                        <div> PowerState: {{ resource['PowerState'] }}</div>     
-                        <div> BootOverride: {{ resource.Boot ? resource['Boot']['BootSourceOverrideEnabled'] : 'n/a'}}</div>     
+        <div class="container-fluid">
+            <!-- Row 1: System Summary (left) | System Status (centre) | BIOS Summary (right) -->
+            <div class="row" style="align-items: stretch;">
+                <div class="col-4 d-flex flex-column">
+                    <div class="title">System Summary</div>
+                    <div class="propertyblock flex-grow-1">
+                        <table class="kv-table">
+                            <tr v-for="entry in ['Name', 'Id', 'SerialNumber', 'Model']" :key="entry">
+                                <td class="kv-key">{{ entry }}</td>
+                                <td class="kv-val">{{ resource[entry] }}</td>
+                            </tr>
+                            <tr><td class="kv-key">Manufacturer</td><td class="kv-val">{{ resource['Manufacturer'] }}</td></tr>
+                            <tr><td class="kv-key">ProcessorModel</td><td class="kv-val">{{ resource.ProcessorSummary ? resource['ProcessorSummary']['Model'] : 'n/a' }}</td></tr>
+                        </table>
                     </div>
-                    <div class="title">Processors</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col-4">Name</th>
-                                <th scope="col-4">Max Speed</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="entry in processors" :key="entry">
-                                <td> {{ entry['Id'] }} ({{ entry['Name'] }})</td>
-                                <td> {{ entry.MaxSpeedMHz ? entry['MaxSpeedMHz'] + 'MHz' : '-' }}  </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
-                <div class="col">
-                    <div class="title">Memory</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col-4">Name</th>
-                                <th scope="col-4">Capacity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="entry in memory" :key="entry">
-                                <td> {{ entry['Id'] }} ({{ entry['Name'] }})</td>
-                                <td> {{ entry.CapacityMiB ? entry['CapacityMiB'] + 'MiB' : '-' }}  </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="title">Storage</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col-4">Name</th>
-                                <th scope="col-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="entry in storage" :key="entry">
-                                <td> {{ entry['Id'] }} ({{ entry['Name'] }})</td>
-                                <td> {{ entry['Status']['Health'] }}  </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="propertyblock" style="float: right">
-                        <div class="title">Actions</div>
+                <div class="col-4 d-flex flex-column">
+                    <div class="title">System Status</div>
+                    <div class="propertyblock flex-grow-1">
+                        <table class="kv-table">
+                            <tr><td class="kv-key">Health</td><td class="kv-val">{{ resource.Status ? resource.Status.Health : 'n/a' }}</td></tr>
+                            <tr><td class="kv-key">PowerState</td><td class="kv-val">{{ resource['PowerState'] }}</td></tr>
+                            <tr><td class="kv-key">BootOverride</td><td class="kv-val">{{ resource.Boot ? resource['Boot']['BootSourceOverrideEnabled'] : 'n/a' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-4 d-flex flex-column">
+                    <div class="title">BIOS Summary</div>
+                    <div class="propertyblock flex-grow-1">
+                        <table class="kv-table">
+                            <tr><td class="kv-key">Version</td><td class="kv-val">{{ resource['BiosVersion'] }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Row 2: Memory Summary (col-4) | Motherboard Summary (col-4) | Actions centered (col-4) -->
+            <div class="row" style="align-items: stretch;">
+                <div class="col-4 d-flex flex-column">
+                    <div class="title">Memory Summary</div>
+                    <div class="propertyblock flex-grow-1">
+                        <table class="kv-table">
+                            <tr><td class="kv-key">TotalSystemMemoryGiB</td><td class="kv-val">{{ resource.MemorySummary ? resource['MemorySummary']['TotalSystemMemoryGiB'] : 'n/a' }}</td></tr>
+                            <tr><td class="kv-key">MemoryMirroring</td><td class="kv-val">{{ resource.MemorySummary ? resource['MemorySummary']['MemoryMirroring'] : 'n/a' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-4 d-flex flex-column">
+                    <div class="title">Motherboard Summary</div>
+                    <div class="propertyblock flex-grow-1">
+                        <table class="kv-table">
+                            <tr><td class="kv-key">Manufacturer</td><td class="kv-val">{{  }}</td></tr>
+                            <tr><td class="kv-key">Model</td><td class="kv-val">{{ resource['Model'] }}</td></tr>
+                            <tr><td class="kv-key">SerialNumber</td><td class="kv-val">{{  }}</td></tr>
+                            <tr><td class="kv-key">Version</td><td class="kv-val">{{ }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-4 d-flex flex-column align-items-center">
+                    <div class="title">Actions</div>
+                    <div class="propertyblock w-100 text-center">
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/System.Reset'" 
-                            title="Reset System" short="Reset System"
-                            msg="Are you sure you wish to reset this System?"/>
+                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/ComputerSystem.Reset'" 
+                            :action_info="action_params['reset']"
+                            title="Reset System" short="Reset System"/>
                         </div>
-                        <div>
+                        <!-- <div>
                             <ActionPatchPost :service="service" 
                             :action_uri="'/redfish/v1/Systems/' + resource.Id " :action_info="action_params['one_time_boot']" :call_type="'PATCH'"
                             title="One Time Boot Override" short="One Time Boot Override"
@@ -84,10 +83,10 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                         </div>
                         <div>
                             <ActionModal :service="service" 
-                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/System.Reset'" 
+                            :action_uri= "'/redfish/v1/Systems/' + resource.Id + '/Actions/ComputerSystem.Reset'" 
                             title="Modify BIOS" short="Modify BIOS"
                             msg="Are you sure you wish to reset this System?"/>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -98,10 +97,9 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 <script>
 import { ref } from 'vue';
 import ActionModal from '../Actions/ActionModal.vue';
-import ActionPatchPost from '../Actions/ActionPatchPost.vue';
 export default {
     name: 'ResourceSystem',
-    components: { ActionModal, ActionPatchPost },
+    components: { ActionModal },
     props: ['service', 'payload', 'keys'],
     watch: {
         payload() {
@@ -113,6 +111,10 @@ export default {
             if (this.resource.Boot['BootSourceOverrideTarget@Redfish.AllowableValues']) {
                 this.action_params['one_time_boot']['Boot.BootSourceOverrideTarget']['value'] = this.resource.Boot['BootSourceOverrideTarget@Redfish.AllowableValues']
             }
+            const resetAllowable = this.resource?.Actions?.['#ComputerSystem.Reset']?.['ResetType@Redfish.AllowableValues']
+            if (resetAllowable) {
+                this.action_params['reset']['ResetType']['value'] = resetAllowable
+            }
         },
     },
     setup(props) {
@@ -120,6 +122,9 @@ export default {
         console.log(props.keys)
 
         const action_params = ref({
+            "reset": {
+              'ResetType': {'option': 'ResetType', 'value': ['On', 'ForceOff', 'ForceRestart']},
+            },
             "one_time_boot": { 
               'Boot.BootSourceOverrideEnabled':  {'option': "Boot.BootSourceOverrideEnabled", 'value': ['Disabled', 'Once', 'Continuous']},
               'Boot.BootSourceOverrideMode':  {'option': "Boot.BootSourceOverrideMode", 'value':['Legacy', 'Uefi']},

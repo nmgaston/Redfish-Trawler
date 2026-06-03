@@ -37,6 +37,7 @@ export default {
               headers: { 'Content-Type': 'application/json', 'login-info': 'get-from-here'}
           }).then(response => response.json())
           .then(payload => page_payload.value = payload)
+          .catch(err => console.error('Failed to load systems:', err))
           view.value = 'table' 
         }
 
