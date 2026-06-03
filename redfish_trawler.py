@@ -84,9 +84,20 @@ def receive_service_details():
         nick = "Host-{}".format(
             len([x for x in available_services.keys() if 'Host-' in x]))
 
-    # TODO: validate information before categorizing it
+    hostname = request.json.get('hostname', '')
+    parsed = parse.urlparse(hostname)
+
+    if parsed.scheme not in ('http', 'https'):
+        return {'error': 'Hostname must start with http:// or https://'}, 400
+
+    if not parsed.netloc:
+        return {'error': 'Hostname must include a host address'}, 400
+
+    if parsed.path.strip('/'):
+        return {'error': 'Hostname should be the base URL only (e.g. https://host:port), not a path'}, 400
+
     available_services[nick] = {
-        "base_url": request.json.get('hostname'),
+        "base_url": hostname,
         "username": request.json.get('username'),
         "password": request.json.get('password'),
         "logintype": LOGIN_TYPES.get(request.json.get('logintype'))
@@ -154,6 +165,8 @@ def route_to_service(path):
         context = get_service_context(service_name)
     except KeyError:
         return 'MISSING SERVICE', 400
+    except ConnectionError as e:
+        return str(e), 503
 
     print(request.path)
 
@@ -272,6 +285,8 @@ def gather_page_info():
         context = get_service_context(service_name)
     except KeyError:
         return 'MISSING SERVICE', 400
+    except ConnectionError as e:
+        return str(e), 503
 
     print(context)
 
@@ -477,6 +492,7 @@ def get_service_context(service_name):
 
     Raises:
         KeyError: service_name doesn't exist
+        ConnectionError: service is unreachable or returned an error
     """
     my_client_id = session['client_id']
     available_services = active_session[my_client_id]['available_services']
@@ -490,13 +506,17 @@ def get_service_context(service_name):
 
         params = available_services.get(service_name)
 
-        context = redfish.redfish_client(
-            base_url=params['base_url'],
-            username=params['username'],
-            password=params['password']
-        )
+        try:
+            context = redfish.redfish_client(
+                base_url=params['base_url'],
+                username=params['username'],
+                password=params['password']
+            )
 
-        context.login(auth=params['logintype'])
+            context.login(auth=params['logintype'])
+        except Exception as e:
+            my_logger.warning('Could not connect to service {}: {}'.format(service_name, e))
+            raise ConnectionError('Service {} is unreachable: {}'.format(service_name, e)) from e
 
         live_services[service_name] = context
 

@@ -39,9 +39,12 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
               </div>
             </form>
           </div>
+          <div class="modal-body" v-if="add_error">
+            <div class="alert alert-danger">{{ add_error }}</div>
+          </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" @click="addService" data-bs-dismiss="modal">Add service</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="add_error = ''">Close</button>
+            <button type="button" class="btn btn-primary" @click="addService">Add service</button>
           </div>
         </div>
       </div>
@@ -59,6 +62,7 @@ export default {
   setup() {
     const services = ref([])
     const current_service = ref('')
+    const add_error = ref('')
 
     const service_info = ref({
         'nickname':  {'option': "Nickname (optional)", 'value':''},
@@ -84,14 +88,21 @@ export default {
     }
 
     function addService(event) {
-      // do not use getelement, use Vue standards
-      console.log(new_service_info)
+      add_error.value = ''
       fetch('/add-service', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(new_service_info.value)
-      }).then(response => response.json())
-      .then(data => services.value = data.available);
+      }).then(response => response.json().then(data => ({ status: response.status, data })))
+      .then(({ status, data }) => {
+        if (status !== 200) {
+          add_error.value = data.error || 'Failed to add service';
+        } else {
+          add_error.value = ''
+          services.value = data.available
+          bootstrap.Modal.getInstance(document.getElementById('addServiceModal')).hide()
+        }
+      });
     }
 
     function delService(event) {
@@ -120,7 +131,7 @@ export default {
 
     pollServices()
 
-    return { services, current_service, service_info, new_service_info, addService, delService, closeService, pollServices}
+    return { services, current_service, service_info, new_service_info, add_error, addService, delService, closeService, pollServices}
   }
 };
 </script>
