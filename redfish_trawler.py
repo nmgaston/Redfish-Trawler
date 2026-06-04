@@ -472,6 +472,42 @@ def gather_page_info():
     return 'OK PAGE VIEW'
 
 
+@app.route('/system-action/reset-to-bios', methods=['POST'])
+def system_reset_to_bios():
+    """PATCH the Boot override on a system to boot once into BIOS Setup."""
+    service_name = request.json.get('service_name')
+    system_id = request.json.get('system_id')
+
+    if not service_name:
+        return 'NO SERVICE GIVEN', 400
+    if not system_id:
+        return 'NO SYSTEM ID GIVEN', 400
+
+    try:
+        context = get_service_context(service_name)
+    except KeyError:
+        return 'MISSING SERVICE', 400
+
+    response = context.patch(
+        '/redfish/v1/Systems/{}'.format(system_id),
+        body={
+            'Boot': {
+                'BootSourceOverrideTarget': 'BiosSetup',
+                'BootSourceOverrideEnabled': 'Once'
+            }
+        }
+    )
+
+    if response:
+        contenttype = response.getheader('content-type')
+        if contenttype and 'application/json' in contenttype:
+            return response.dict, response.status
+        else:
+            return response.text, response.status
+
+    return 'STATUS CODE {}'.format(response.status), response.status
+
+
 def get_service_context(service_name):
     """Get service context.  If it doesn't exist, create the context.
 

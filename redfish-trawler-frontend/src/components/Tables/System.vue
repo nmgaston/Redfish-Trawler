@@ -26,10 +26,12 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                     <td> {{ entry.SystemType }}</td>
                     <td> {{ entry.PowerState }}</td>
                     <td> {{ entry.Status ? entry.Status.Health : 'n/a' }}</td>     
-                    <td> <ActionModal :service="service" 
-                        :action_uri= "'/redfish/v1/Systems/' + entry.Id + '/Actions/ComputerSystem.Reset'" 
-                        :action_info="reset_params"
-                        title="Reset System" short="Reset"/>
+                    <td>
+                        <ActionModal :service="service" 
+                            :action_uri= "'/redfish/v1/Systems/' + entry.Id + '/Actions/ComputerSystem.Reset'" 
+                            :action_info="reset_params"
+                            title="Reset System" short="Reset"/>
+                        <button type="button" style="margin-left: 6px;" @click="resetToBios(entry.Id)">Reset to BIOS</button>
                     </td>
                 </tr>
             </tbody>
@@ -60,7 +62,22 @@ export default {
             'ResetType': {'option': 'ResetType', 'value': ['On', 'ForceOff', 'ForceRestart']},
         })
 
-        return {title, all_elements, all_keys, reset_params}
+        function resetToBios(systemId) {
+            if (!confirm('Reset boot override to BIOS Setup (Once) for ' + systemId + '?')) return;
+            fetch('/system-action/reset-to-bios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ service_name: props.service, system_id: systemId }),
+            }).then(response => {
+                if (response.status === 202 || response.status === 200) {
+                    alert('Boot override set to BIOS Setup.\nPlease reset the system to enter BIOS.');
+                } else {
+                    alert([response.status, response.statusText, '\n'].join(' '));
+                }
+            });
+        }
+
+        return {title, all_elements, all_keys, reset_params, resetToBios}
     }
 }
 </script>

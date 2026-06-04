@@ -75,6 +75,9 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
                             :action_info="action_params['reset']"
                             title="Reset System" short="Reset System"/>
                         </div>
+                        <div style="margin-top: 8px;">
+                            <button type="button" @click="resetToBios">Reset to BIOS</button>
+                        </div>
                         <!-- <div>
                             <ActionPatchPost :service="service" 
                             :action_uri="'/redfish/v1/Systems/' + resource.Id " :action_info="action_params['one_time_boot']" :call_type="'PATCH'"
@@ -140,7 +143,22 @@ export default {
         const memory = ref(props.payload['_memory'])
         const storage = ref(props.payload['_storage'])
 
-        return {title, resource, processors, memory, storage, action_params}
+        function resetToBios() {
+            if (!confirm('Reset boot override to BIOS Setup (Once)?')) return;
+            fetch('/system-action/reset-to-bios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ service_name: props.service, system_id: resource.value.Id }),
+            }).then(response => {
+                if (response.status === 202 || response.status === 200) {
+                    alert('Boot override set to BIOS Setup.\nPlease reset the system to enter BIOS.');
+                } else {
+                    alert([response.status, response.statusText, '\n'].join(' '));
+                }
+            });
+        }
+
+        return {title, resource, processors, memory, storage, action_params, resetToBios}
     }
 }
 </script>
