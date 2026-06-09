@@ -49,6 +49,40 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
 
     <button type="button" class="btn btn-secondary btn-sm" @click="delService">Delete Service</button>
     <button type="button" class="btn btn-danger btn-sm" @click="closeService">Close Service</button>
+
+    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#dmtConsoleModal" style="margin-left: 8px;">
+      Configure DMT Console
+    </button>
+    <div class="modal fade" id="dmtConsoleModal" tabindex="-1" aria-labelledby="dmtConsoleLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="dmtConsoleLabel">Configure DMT Console</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form role="form">
+              <div class="mb-3">
+                <label for="dmtUrlId" class="form-label">URL</label>
+                <input id="dmtUrlId" type="text" class="form-control" v-model="dmt_info.url" placeholder="https://localhost:8181">
+              </div>
+              <div class="mb-3">
+                <label for="dmtUserid" class="form-label">Username</label>
+                <input id="dmtUserid" type="text" class="form-control" v-model="dmt_info.username">
+              </div>
+              <div class="mb-3">
+                <label for="dmtPassId" class="form-label">Password</label>
+                <input id="dmtPassId" type="password" class="form-control" v-model="dmt_info.password">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" @click="configureDmt" data-bs-dismiss="modal">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -118,9 +152,19 @@ export default {
       .then(data => services.value = data.available);
     }
 
+    const dmt_info = ref({ url: 'https://localhost:8181', username: '', password: '' })
+
+    function configureDmt() {
+      fetch('/configure-dmt-console', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dmt_info.value)
+      });
+    }
+
     pollServices()
 
-    return { services, current_service, service_info, new_service_info, addService, delService, closeService, pollServices}
+    return { services, current_service, service_info, new_service_info, dmt_info, addService, delService, closeService, pollServices, configureDmt}
   }
 };
 </script>
