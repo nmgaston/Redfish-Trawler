@@ -22,7 +22,7 @@ License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/R
             </thead>
             <tbody>
                 <tr v-for="entry in all_elements" :key="entry">
-                    <td> <a href="#" @click="$emit('goto', entry.Id)">{{ entry.Name }} ({{ entry.Id }})</a> </td>
+                    <td> <a href="#" @click="$emit('goto', entry.Id)">{{ friendly_names[entry.Id] || entry.HostName || (entry.Name !== entry.Id ? entry.Name : null) || entry.Model || entry.Id }} ({{ entry.Id }})</a> </td>
                     <td> {{ entry.SystemType }}</td>
                     <td> {{ entry.PowerState }}</td>
                     <td> {{ entry.Status ? entry.Status.Health : 'n/a' }}</td>     
@@ -58,9 +58,19 @@ export default {
         const title = ref('Collection')
         const all_elements = ref(props.payload)
         const all_keys = ref(props.keys)
+        const friendly_names = ref({})
         const reset_params = ref({
             'ResetType': {'option': 'ResetType', 'value': ['On', 'ForceOff', 'ForceRestart']},
         })
+
+        function fetchFriendlyNames() {
+            fetch('/dmt-friendly-names')
+                .then(response => response.json())
+                .then(data => { friendly_names.value = data })
+                .catch(() => {})
+        }
+
+        fetchFriendlyNames()
 
         function resetToBios(systemId) {
             if (!confirm('Reset boot override to BIOS Setup (Once) for ' + systemId + '?')) return;
@@ -77,7 +87,7 @@ export default {
             });
         }
 
-        return {title, all_elements, all_keys, reset_params, resetToBios}
+        return {title, all_elements, all_keys, reset_params, friendly_names, resetToBios}
     }
 }
 </script>

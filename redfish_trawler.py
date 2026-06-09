@@ -10,6 +10,9 @@ import logging
 import argparse
 import webbrowser
 from urllib import parse
+import requests
+import urllib3
+urllib3.disable_warnings()
 
 import redfish
 
@@ -50,7 +53,8 @@ def start():
         my_client_id = session['client_id']
         active_session[my_client_id] = {
             "available_services": {},
-            "live_services": {}
+            "live_services": {},
+            "dmt_console": {}
         }
     return render_template(
         'compiled/index.html'
@@ -470,6 +474,75 @@ def gather_page_info():
             return return_data
 
     return 'OK PAGE VIEW'
+
+
+@app.route('/configure-dmt-console', methods=['POST'])
+def configure_dmt_console():
+    """Save DMT Console connection details for this browser session."""
+    my_client_id = session['client_id']
+    active_session[my_client_id]['dmt_console'] = {
+        'url': request.json.get('url', '').rstrip('/'),
+        'username': request.json.get('username', ''),
+        'password': request.json.get('password', ''),
+    }
+    return {'configured': True}
+
+
+@app.route('/dmt-friendly-names', methods=['GET'])
+def get_dmt_friendly_names():
+    """Return a guid->friendlyName map from DMT Console. Returns {} if not configured."""
+    my_client_id = session['client_id']
+    dmt_config = active_session[my_client_id].get('dmt_console', {})
+
+    if not dmt_config.get('url'):
+        return {}
+
+    try:
+        login_resp = requests.post(
+            dmt_config['url'] + '/api/v1/authorize',
+            json={'username': dmt_config['username'], 'password': dmt_config['password']},
+            verify=False,
+            timeout=5
+        )
+        if login_resp.status_code != 200:
+            my_logger.warning('DMT Console login failed: {}'.format(login_resp.status_code))
+            return {}, 200
+
+        login_data = login_resp.json()
+        if isinstance(login_data, str):
+            token = login_data
+        elif isinstance(login_data, dict):
+            token = login_data.get('token') or login_data.get('access_token', '')
+        else:
+            my_logger.warning('DMT Console login returned unexpected type: {}'.format(type(login_data)))
+            return {}, 200
+
+        devices_resp = requests.get(
+            dmt_config['url'] + '/api/v1/devices?$top=100&$skip=0',
+            headers={'Authorization': 'Bearer ' + token},
+            verify=False,
+            timeout=5
+        )
+        if devices_resp.status_code != 200:
+            my_logger.warning('DMT Console device fetch failed: {}'.format(devices_resp.status_code))
+            return {}, 200
+
+        devices_data = devices_resp.json()
+        if isinstance(devices_data, list):
+            device_list = devices_data
+        else:
+            device_list = devices_data.get('data', [])
+
+        name_map = {
+            d['guid']: d['friendlyName']
+            for d in device_list
+            if d.get('guid') and d.get('friendlyName')
+        }
+        return name_map
+
+    except Exception as e:
+        my_logger.warning('DMT Console lookup failed: {}'.format(e))
+        return {}
 
 
 @app.route('/system-action/reset-to-bios', methods=['POST'])
