@@ -474,7 +474,7 @@ def gather_page_info():
 
 @app.route('/system-action/reset-to-bios', methods=['POST'])
 def system_reset_to_bios():
-    """PATCH the Boot override on a system to boot once into BIOS Setup."""
+    """PATCH the Boot override on a system to boot once into BIOS Setup, then restart it."""
     service_name = request.json.get('service_name')
     system_id = request.json.get('system_id')
 
@@ -488,7 +488,7 @@ def system_reset_to_bios():
     except KeyError:
         return 'MISSING SERVICE', 400
 
-    response = context.patch(
+    patch_response = context.patch(
         '/redfish/v1/Systems/{}'.format(system_id),
         body={
             'Boot': {
@@ -498,14 +498,23 @@ def system_reset_to_bios():
         }
     )
 
-    if response:
-        contenttype = response.getheader('content-type')
-        if contenttype and 'application/json' in contenttype:
-            return response.dict, response.status
-        else:
-            return response.text, response.status
+    if not patch_response or patch_response.status not in [200, 202, 204]:
+        status = patch_response.status if patch_response else 500
+        return 'Boot override failed with status {}'.format(status), status
 
-    return 'STATUS CODE {}'.format(response.status), response.status
+    reset_response = context.post(
+        '/redfish/v1/Systems/{}/Actions/ComputerSystem.Reset'.format(system_id),
+        body={'ResetType': 'ForceRestart'}
+    )
+
+    if reset_response:
+        contenttype = reset_response.getheader('content-type')
+        if contenttype and 'application/json' in contenttype:
+            return reset_response.dict, reset_response.status
+        else:
+            return reset_response.text, reset_response.status
+
+    return 'STATUS CODE {}'.format(reset_response.status), reset_response.status
 
 
 def get_service_context(service_name):

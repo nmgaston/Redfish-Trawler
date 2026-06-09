@@ -144,14 +144,14 @@ export default {
         const storage = ref(props.payload['_storage'])
 
         function resetToBios() {
-            if (!confirm('Reset boot override to BIOS Setup (Once)?')) return;
+            if (!confirm('This will immediately restart the system into BIOS Setup. Continue?')) return;
             fetch('/system-action/reset-to-bios', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ service_name: props.service, system_id: resource.value.Id }),
             }).then(response => {
                 if (response.status === 202 || response.status === 200) {
-                    alert('Boot override set to BIOS Setup.\nPlease reset the system to enter BIOS.');
+                    alert('System is restarting into BIOS Setup.');
                 } else {
                     alert([response.status, response.statusText, '\n'].join(' '));
                 }
