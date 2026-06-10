@@ -73,14 +73,14 @@ export default {
         fetchFriendlyNames()
 
         function resetToBios(systemId) {
-            if (!confirm('Reset boot override to BIOS Setup (Once) for ' + systemId + '?')) return;
+            if (!confirm('This will immediately restart ' + systemId + ' into BIOS Setup. Continue?')) return;
             fetch('/system-action/reset-to-bios', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ service_name: props.service, system_id: systemId }),
             }).then(response => {
                 if (response.status === 202 || response.status === 200) {
-                    alert('Boot override set to BIOS Setup.\nPlease reset the system to enter BIOS.');
+                    alert('System is restarting into BIOS Setup.');
                 } else {
                     alert([response.status, response.statusText, '\n'].join(' '));
                 }
